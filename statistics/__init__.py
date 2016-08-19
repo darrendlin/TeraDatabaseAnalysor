@@ -18,3 +18,4 @@ class Analyzer:
             obj.results()
 
 import statistics.class_count
+import statistics.dps_distribution

@@ -45,3 +45,6 @@ fabric.properties
 
 # Python compiled files
 *.pyc
+
+# Generated statistic files
+histograms

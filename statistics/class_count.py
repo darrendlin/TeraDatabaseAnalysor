@@ -2,7 +2,7 @@ from statistics import statistic
 import collections
 
 @statistic
-class Class_Count:
+class ClassCount:
     def __init__(self):
         self.data = collections.defaultdict(int)
 
@@ -12,4 +12,4 @@ class Class_Count:
 
     def results(self):
         for cls, count in self.data.items():
-            print (cls.encode("utf8"), count)
+            print (cls, "-", count)

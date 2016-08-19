@@ -5,7 +5,30 @@ import collections
 import statistics
 
 directory = "/media/sf_Stats/processing"
+directory = "../tera_data_full"
 errors = 0
+
+#thanks to Loriri for these
+moonrunes = {
+    "인술사": "Ninja", 
+    "비검사": "Reaper", 
+    "정령사": "Mystic", 
+    "궁수": "Archer", 
+    "사제": "Priest", 
+    "광전사": "Berserker", 
+    "창기사": "Lancer", 
+    "권술사": "Brawler", 
+    "무사": "Slayer", 
+    "검투사": "Warrior", 
+    "마공사": "Gunner", 
+    "마법사": "Sorcerer", 
+}
+
+def translate_moonrune_classes(encounter):
+    for member in encounter["members"]:
+        if member["playerClass"] in moonrunes:
+            member["playerClass"] = moonrunes[member["playerClass"]]
+
 
 def parse(filename):
     with open(filename) as data_file:
@@ -17,14 +40,15 @@ def parse(filename):
 
         return None
 
+
 def parseall(datadir):
     for root, dirs, files in os.walk(datadir):
-        boss = os.path.basename(root)
-        
         for fight in files:
             data = parse(os.path.join(root, fight))
-            data["boss"] = boss
+            translate_moonrune_classes(data)
+
             yield data
+
 
 if __name__ == "__main__":
     start_time = time.time()
