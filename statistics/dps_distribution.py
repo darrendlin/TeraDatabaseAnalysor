@@ -7,6 +7,10 @@ import os.path
 
 #collumns of 50k/s
 GRANULARITY = 50000
+MAX_DPS = 4000000
+TICS_SPACING = 500000
+MULTIPLIER = 1000000
+
 
 class Histogram:
     def __init__(self, granularity):
@@ -14,7 +18,9 @@ class Histogram:
         self.data = defaultdict(int)
 
     def consume(self, value):
-        collumn = int(value) // self.granularity
+        if value > MAX_DPS: return
+
+        collumn = value // self.granularity
         self.data[collumn] += 1
 
     def __iter__(self):
@@ -22,12 +28,20 @@ class Histogram:
         yield from [self.data[i] for i in range(size)]
 
     def export(self, filename):
+        indices = numpy.arange(0, MAX_DPS / MULTIPLIER, GRANULARITY / MULTIPLIER)
         values = list(self)
-        indices = numpy.arange(len(values))
-        width = 1
+        values += [0 for i in range(len(values), len(indices))]
+        
+        width = GRANULARITY / MULTIPLIER
 
         pyplot.bar(indices, values, width)
+        
+        pyplot.xticks(numpy.arange(0, MAX_DPS / MULTIPLIER + 1, TICS_SPACING / MULTIPLIER))
+        pyplot.xlabel("M/s")
+        pyplot.ylabel("Number of encounters")
+
         pyplot.savefig(filename)
+        
         pyplot.clf()
 
 GranularHistogram = partial(Histogram, GRANULARITY)
@@ -44,7 +58,7 @@ class DpsDistribution:
         boss = encounter["areaId"] + "." + encounter["bossId"]
 
         for member in encounter["members"]:
-            dps = member["playerDps"]
+            dps = int(member["playerDps"])
             cls = member["playerClass"]
             
             self.total.consume(dps)
