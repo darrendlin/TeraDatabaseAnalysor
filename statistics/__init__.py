@@ -15,6 +15,8 @@ class Analyzer:
 
     def results(self):
         for obj in self.stats:
+            print("{:-^40}".format(" " + type(obj).__name__ + " "))
+
             obj.results()
 
 import statistics.class_count

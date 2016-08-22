@@ -13,6 +13,5 @@ class ClassCount:
     def results(self):
         f = open('class_count.txt', 'w')
         for cls, count in self.data.items():
-            f.write(cls+":"+str(count)+"\n")
+            f.write("{}:{}\n".format(cls, count))
         f.close()
-
