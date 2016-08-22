@@ -7,7 +7,7 @@ import os.path
 
 #collumns of 50k/s
 GRANULARITY = 50000
-MAX_DPS = 4000000
+MAX_DPS = 2500000
 TICS_SPACING = 500000
 MULTIPLIER = 1000000
 
@@ -36,7 +36,7 @@ class Histogram:
 
         pyplot.bar(indices, values, width)
         
-        pyplot.xticks(numpy.arange(0, MAX_DPS / MULTIPLIER + 1, TICS_SPACING / MULTIPLIER))
+        pyplot.xticks(numpy.arange(0, (MAX_DPS+1) / MULTIPLIER, TICS_SPACING / MULTIPLIER))
         pyplot.xlabel("M/s")
         pyplot.ylabel("Number of encounters")
 
