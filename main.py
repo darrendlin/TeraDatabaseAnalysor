@@ -4,7 +4,7 @@ import json
 import collections
 import statistics
 
-directory = "/media/sf_TeraStats/processing"
+directory = "G:\TeraStats\processing"
 #directory = "../tera_data_full"
 errors = 0
 

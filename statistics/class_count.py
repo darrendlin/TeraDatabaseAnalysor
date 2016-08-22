@@ -1,7 +1,7 @@
 from statistics import statistic
 import collections
-
 @statistic
+
 class ClassCount:
     def __init__(self):
         self.data = collections.defaultdict(int)
@@ -11,5 +11,8 @@ class ClassCount:
             self.data[member["playerClass"]] += 1
 
     def results(self):
+        f = open('class_count.txt', 'w')
         for cls, count in self.data.items():
-            print (cls, "-", count)
+            f.write(cls+":"+str(count)+"\n")
+        f.close()
+
