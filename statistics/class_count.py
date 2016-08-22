@@ -12,4 +12,4 @@ class ClassCount:
 
     def results(self):
         for cls, count in self.data.items():
-            print (cls, "-", count)
+            print ("{:<10} {}".format(cls, count))

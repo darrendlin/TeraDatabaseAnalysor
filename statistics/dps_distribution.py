@@ -73,13 +73,18 @@ class DpsDistribution:
             #should probably delete it here, cause if it's a file it will fail, but meh
             os.makedirs(dirname)
 
+        print ("Creating total")
+
         self.total.export("histograms/total.png")
         
+        print ("Creating class histograms")
         for cls, plot in self.bycls.items():
             plot.export("histograms/by_class/{}.png".format(cls))
 
+        print ("Creating boss histograms")
         for boss, plot in self.byboss.items():
             plot.export("histograms/by_boss/{}.png".format(boss))
 
+        print ("Creating class-boss histograms")
         for (cls, boss), plot in self.byclsboss.items():
             plot.export("histograms/by_class_boss/{}.{}.png".format(cls, boss))
