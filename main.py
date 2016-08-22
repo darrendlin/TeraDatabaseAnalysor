@@ -4,8 +4,8 @@ import json
 import collections
 import statistics
 
-directory = "/media/sf_Stats/processing"
-directory = "../tera_data_full"
+directory = "/media/sf_TeraStats/processing"
+#directory = "../tera_data_full"
 errors = 0
 
 #thanks to Loriri for these
@@ -31,11 +31,12 @@ def translate_moonrune_classes(encounter):
 
 
 def parse(filename):
+    global errors
     with open(filename) as data_file:
         try:
             data = json.load(data_file)
             return data
-        except ValueError as e :
+        except:
           errors += 1
 
         return None
@@ -45,6 +46,8 @@ def parseall(datadir):
     for root, dirs, files in os.walk(datadir):
         for fight in files:
             data = parse(os.path.join(root, fight))
+            if(data == None ): 
+                continue
             translate_moonrune_classes(data)
 
             yield data
