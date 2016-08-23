@@ -31,7 +31,12 @@ class Histogram:
         indices = numpy.arange(0, MAX_DPS / MULTIPLIER, GRANULARITY / MULTIPLIER)
         values = list(self)
         values += [0 for i in range(len(values), len(indices))]
-        
+
+        f = open(filename+".txt", 'w')
+        for i in range(0, len(values) -1):
+            f.write("{}:{}\n".format(values[i], round(indices[i],2)))
+        f.close()
+
         width = GRANULARITY / MULTIPLIER
 
         pyplot.bar(indices, values, width)
@@ -54,7 +59,7 @@ class DpsDistribution:
         self.byboss = defaultdict(GranularHistogram)
         self.byclsboss = defaultdict(GranularHistogram)
 
-    def consume(self, encounter):
+    def consume(self, encounter, basedir, filename):
         boss = encounter["areaId"] + "." + encounter["bossId"]
 
         for member in encounter["members"]:

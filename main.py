@@ -3,6 +3,7 @@ import time
 import json
 import collections
 import statistics
+import threading
 
 directory = "G:\TeraStats\processing"
 #directory = "../tera_data_full"
@@ -41,16 +42,29 @@ def parse(filename):
 
         return None
 
+def parsedirectory(files, root):
+    for fight in files:
+        basedir = os.path.basename(os.path.normpath(root))
+        data = parse(os.path.join(root, fight))
+        if (data == None):
+            continue
+        translate_moonrune_classes(data)
+        yield [data, basedir, fight]
 
 def parseall(datadir):
     for root, dirs, files in os.walk(datadir):
-        for fight in files:
-            data = parse(os.path.join(root, fight))
-            if(data == None ): 
-                continue
-            translate_moonrune_classes(data)
+        thread = threading.Thread(target=parsedirectory,args=(files, root),)
+        thread.start()
 
-            yield data
+
+def thread_function(files, root, analyzer):
+    global loaded
+    for encounter in parsedirectory(files, root):
+        if loaded % 4200 == 0:
+            print("\rParsing {:.4%}".format(loaded / total), end="")
+
+        analyzer.consume(encounter[0], encounter[1], encounter[2])
+        loaded += 1
 
 def count_files(datadir):
     res = 0
@@ -75,12 +89,15 @@ if __name__ == "__main__":
     print("Loaded", *[type(obj).__name__ for obj in analyzer.stats])
 
     loaded = 0
-    for encounter in parseall(directory):
-        if loaded % 42 == 0:
-            print ("\rParsing {:.4%}".format(loaded / total), end="")
+    threads = []
+    for root, dirs, files in os.walk(directory):
+        thread = threading.Thread(target=thread_function, args=(files, root, analyzer), )
+        threads.append(thread)
+        thread.start()
 
-        analyzer.consume(encounter)
-        loaded += 1
+    for x in threads:
+        x.join()
+
 
     print ("\rParsing {:.4%}".format(loaded / total))
     print ()
