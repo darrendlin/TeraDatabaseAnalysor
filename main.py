@@ -91,12 +91,13 @@ if __name__ == "__main__":
     loaded = 0
     threads = []
     for root, dirs, files in os.walk(directory):
-        thread = threading.Thread(target=thread_function, args=(files, root, analyzer), )
-        threads.append(thread)
-        thread.start()
+        thread_function(files, root, analyzer)
+        #thread = threading.Thread(target=thread_function, args=(files, root, analyzer), )
+        #threads.append(thread)
+        #thread.start()
 
-    for x in threads:
-        x.join()
+    #for x in threads:
+    #    x.join()
 
 
     print ("\rParsing {:.4%}".format(loaded / total))

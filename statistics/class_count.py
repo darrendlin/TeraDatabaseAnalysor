@@ -1,6 +1,6 @@
 from statistics import statistic
 import datetime
-import collections
+import os.path
 
 @statistic
 class ClassCount:
@@ -32,20 +32,27 @@ class ClassCount:
             self.data_region_date[region][date][member["playerClass"]] += 1
 
     def results(self):
-        f = open('class.txt', 'w')
+
+        for dirname in ["data/class/EU", "data/class/NA", "data/class/RU", "data/class/JP", "data/class/KR", "data/class/TW"]:
+            if os.path.isdir(dirname): continue
+
+            # should probably delete it here, cause if it's a file it will fail, but meh
+            os.makedirs(dirname)
+
+        f = open('data/class/global.txt', 'w')
         for cls, count in self.data_global.items():
             f.write("{}:{}\n".format(cls, count))
         f.close()
 
         for region, data in self.data_region.items():
-            f = open("class_"+region+".txt", 'w')
+            f = open("data/class/"+region+".txt", 'w')
             for cls, count in data.items():
                 f.write("{}:{}\n".format(cls, count))
             f.close()
 
         for region, data in self.data_region_date.items():
             for date, data in data.items():
-                f = open("class_" + region+"_"+date+".txt", 'w')
+                f = open("data/class/"+region+"/"+date+".txt", 'w')
                 for cls, count in data.items():
                     f.write("{}:{}\n".format(cls, count))
                 f.close()

@@ -11,7 +11,6 @@ MAX_DPS = 2500000
 TICS_SPACING = 500000
 MULTIPLIER = 1000000
 
-
 class Histogram:
     def __init__(self, granularity):
         self.granularity = granularity
@@ -32,22 +31,10 @@ class Histogram:
         values = list(self)
         values += [0 for i in range(len(values), len(indices))]
 
-        f = open(filename+".txt", 'w')
-        for i in range(0, len(values) -1):
-            f.write("{}:{}\n".format(values[i], round(indices[i],2)))
+        f = open(filename, 'w')
+        for i in range(0, len(values) - 1):
+            f.write("{}:{}\n".format(round(indices[i], 2), values[i]))
         f.close()
-
-        width = GRANULARITY / MULTIPLIER
-
-        pyplot.bar(indices, values, width)
-        
-        pyplot.xticks(numpy.arange(0, (MAX_DPS+1) / MULTIPLIER, TICS_SPACING / MULTIPLIER))
-        pyplot.xlabel("M/s")
-        pyplot.ylabel("Number of encounters")
-
-        pyplot.savefig(filename)
-        
-        pyplot.clf()
 
 GranularHistogram = partial(Histogram, GRANULARITY)
 
@@ -72,7 +59,7 @@ class DpsDistribution:
             self.byclsboss[(cls, boss)].consume(dps)
 
     def results(self):
-        for dirname in ["histograms/by_class", "histograms/by_boss", "histograms/by_class_boss"]:
+        for dirname in ["data/dps/by_class", "data/dps/by_boss", "data/dps/by_class_boss"]:
             if os.path.isdir(dirname): continue
 
             #should probably delete it here, cause if it's a file it will fail, but meh
@@ -80,16 +67,19 @@ class DpsDistribution:
 
         print ("Creating total")
 
-        self.total.export("histograms/total.png")
+        self.total.export("data/dps/total.txt")
         
         print ("Creating class histograms")
         for cls, plot in self.bycls.items():
-            plot.export("histograms/by_class/{}.png".format(cls))
+            plot.export("data/dps/by_class/{}.txt".format(cls))
 
         print ("Creating boss histograms")
         for boss, plot in self.byboss.items():
-            plot.export("histograms/by_boss/{}.png".format(boss))
+            plot.export("data/dps/by_boss/{}.txt".format(boss))
 
         print ("Creating class-boss histograms")
         for (cls, boss), plot in self.byclsboss.items():
-            plot.export("histograms/by_class_boss/{}.{}.png".format(cls, boss))
+            dirname = "data/dps/by_class_boss/"+boss+"/"
+            if os.path.isdir(dirname): continue
+            os.makedirs(dirname)
+            plot.export(dirname+"{}.txt".format(cls))
