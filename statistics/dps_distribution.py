@@ -1,8 +1,8 @@
 from statistics import statistic
 from functools import partial
 from collections import defaultdict
-from matplotlib import pyplot
 import numpy
+import datetime
 import os.path
 
 #collumns of 50k/s
@@ -41,22 +41,34 @@ GranularHistogram = partial(Histogram, GRANULARITY)
 @statistic
 class DpsDistribution:
     def __init__(self):
-        self.total = GranularHistogram()
         self.bycls = defaultdict(GranularHistogram)
+        self.byregioncls = defaultdict(GranularHistogram)
         self.byboss = defaultdict(GranularHistogram)
-        self.byclsboss = defaultdict(GranularHistogram)
+        self.byregionboss = defaultdict(GranularHistogram)
+        self.bybosscls = defaultdict(GranularHistogram)
+        self.byregionbosscls = defaultdict(GranularHistogram)
+        self.bybossclsdate = defaultdict(GranularHistogram)
+        self.byregionbossclsdate = defaultdict(GranularHistogram)
 
     def consume(self, encounter, basedir, filename):
+        region = basedir.split(".")[0]
         boss = encounter["areaId"] + "." + encounter["bossId"]
+        timestamp = encounter["timestamp"]
+        date = datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m')
 
         for member in encounter["members"]:
+
             dps = int(member["playerDps"])
             cls = member["playerClass"]
-            
-            self.total.consume(dps)
             self.bycls[cls].consume(dps)
+            self.byregioncls[(region, cls)].consume(dps)
             self.byboss[boss].consume(dps)
-            self.byclsboss[(cls, boss)].consume(dps)
+            self.byregionboss[(region, boss)].consume(dps)
+            self.bybosscls[(cls, boss)].consume(dps)
+            self.byregionbosscls[(region, cls, boss)].consume(dps)
+            self.bybossclsdate[(boss, cls, date)].consume(dps)
+            self.byregionbossclsdate[(region, boss, cls, date)].consume(dps)
+
 
     def results(self):
         for dirname in ["data/dps/by_class", "data/dps/by_boss", "data/dps/by_class_boss"]:
@@ -66,20 +78,46 @@ class DpsDistribution:
             os.makedirs(dirname)
 
         print ("Creating total")
-
-        self.total.export("data/dps/total.txt")
-        
         print ("Creating class histograms")
         for cls, plot in self.bycls.items():
             plot.export("data/dps/by_class/{}.txt".format(cls))
+
+        print("Creating class histograms by region")
+        for (region, cls), plot in self.byregioncls.items():
+            dirname = "data/dps/by_region_class/" + region + "/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
+            plot.export(dirname + "{}.txt".format(cls))
 
         print ("Creating boss histograms")
         for boss, plot in self.byboss.items():
             plot.export("data/dps/by_boss/{}.txt".format(boss))
 
+        print("Creating boss histograms by region")
+        for (region, boss), plot in self.byregionboss.items():
+            dirname = "data/dps/by_region_boss/" + region + "/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
+            plot.export(dirname + "{}.txt".format(boss))
+
         print ("Creating class-boss histograms")
-        for (cls, boss), plot in self.byclsboss.items():
-            dirname = "data/dps/by_class_boss/"+boss+"/"
-            if os.path.isdir(dirname): continue
-            os.makedirs(dirname)
+        for (cls, boss), plot in self.bybosscls.items():
+            dirname = "data/dps/by_boss_class/"+boss+"/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
             plot.export(dirname+"{}.txt".format(cls))
+
+        print("Creating class-boss histograms by region")
+        for (region, cls, boss), plot in self.byregionbosscls.items():
+            dirname = "data/dps/by_region_boss_class/" + region + "/" + boss + "/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
+            plot.export(dirname + "{}.txt".format(cls))
+
+        print("Creating boss-class-date histograms")
+        for (boss, cls, date), plot in self.bybossclsdate.items():
+            dirname = "data/dps/by_boss_class_date/" + boss + "/"+cls+"/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
+            plot.export(dirname + "{}.txt".format(date))
+
+        print("Creating boss-class-date histograms by region")
+        for (region, boss, cls, date), plot in self.byregionbossclsdate.items():
+            dirname = "data/dps/by_region_boss_class_date/" + region + "/" + boss + "/" + cls + "/"
+            if not os.path.isdir(dirname): os.makedirs(dirname)
+            plot.export(dirname + "{}.txt".format(date))
