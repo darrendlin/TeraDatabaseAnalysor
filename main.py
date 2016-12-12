@@ -30,19 +30,10 @@ def translate_moonrune_classes(encounter):
         if member["playerClass"] in moonrunes:
             member["playerClass"] = moonrunes[member["playerClass"]]
 
-def normalize(filename):
-    json = ""
-    with open(filename) as data_file:
-        for line in data_file:
-            if not (len(line) > 80 and len(line) < 200):
-                json = json + line
-    return json
-
-
 def parse(filename):
     global errors
     try:
-        data = json.loads(normalize(filename))
+        data = json.load(open(filename))
         return data
     except:
       errors += 1
