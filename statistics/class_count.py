@@ -23,7 +23,7 @@ class ClassCount:
         self.data_region = defaultdict(Class)
         self.data_region_date = defaultdict(Class)
 
-    def consume(self, encounter, basedir, filename):
+    def consume(self, encounter, basedir):
         region = basedir.split(".")[0]
         timestamp = encounter["timestamp"]
         date = datetime.datetime.fromtimestamp(int(timestamp)).strftime('%Y-%m')

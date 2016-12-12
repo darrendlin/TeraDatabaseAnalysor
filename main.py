@@ -4,9 +4,9 @@ import json
 import collections
 import statistics
 import threading
+import traceback
 
-directory = "G:\TeraStats\processing"
-#directory = "../tera_data_full"
+directory = "E:/Tera/teraNewStats/"
 errors = 0
 
 #thanks to Loriri for these
@@ -30,41 +30,37 @@ def translate_moonrune_classes(encounter):
         if member["playerClass"] in moonrunes:
             member["playerClass"] = moonrunes[member["playerClass"]]
 
+def normalize(filename):
+    json = ""
+    with open(filename) as data_file:
+        for line in data_file:
+            if not (len(line) > 80 and len(line) < 200):
+                json = json + line
+    return json
+
 
 def parse(filename):
     global errors
-    with open(filename) as data_file:
-        try:
-            data = json.load(data_file)
-            return data
-        except:
-          errors += 1
+    try:
+        data = json.loads(normalize(filename))
+        return data
+    except:
+      errors += 1
+      print(traceback.format_exc())
 
-        return None
+    return None
 
-def parsedirectory(files, root):
-    for fight in files:
-        basedir = os.path.basename(os.path.normpath(root))
-        data = parse(os.path.join(root, fight))
-        if (data == None):
+def thread_function(files, analyzer):
+    i = 1
+    for file in files:
+        print("Parsing "+file+" : "+str(i)+"/"+str(len(files)))
+        i += 1
+        all_data = parse(os.path.join(directory, file))
+        if (all_data == None):
             continue
-        translate_moonrune_classes(data)
-        yield [data, basedir, fight]
-
-def parseall(datadir):
-    for root, dirs, files in os.walk(datadir):
-        thread = threading.Thread(target=parsedirectory,args=(files, root),)
-        thread.start()
-
-
-def thread_function(files, root, analyzer):
-    global loaded
-    for encounter in parsedirectory(files, root):
-        if loaded % 4200 == 0:
-            print("\rParsing {:.4%}".format(loaded / total), end="")
-
-        analyzer.consume(encounter[0], encounter[1], encounter[2])
-        loaded += 1
+        for data in all_data:
+            translate_moonrune_classes(data["content"])
+            analyzer.consume(data["content"], data["directory"])
 
 def count_files(datadir):
     res = 0
@@ -91,17 +87,7 @@ if __name__ == "__main__":
     loaded = 0
     threads = []
     for root, dirs, files in os.walk(directory):
-        thread_function(files, root, analyzer)
-        #thread = threading.Thread(target=thread_function, args=(files, root, analyzer), )
-        #threads.append(thread)
-        #thread.start()
-
-    #for x in threads:
-    #    x.join()
-
-
-    print ("\rParsing {:.4%}".format(loaded / total))
-    print ()
+        thread_function(files, analyzer)
 
     print ("Collecting results... ")
     analyzer.results()

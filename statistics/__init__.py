@@ -9,9 +9,9 @@ class Analyzer:
     def __init__(self):
         self.stats = [cls() for cls in _registered]
 
-    def consume(self, json, basedir, filename):
+    def consume(self, json, directory):
         for obj in self.stats:
-            obj.consume(json, basedir, filename)
+            obj.consume(json, directory)
 
     def results(self):
         for obj in self.stats:
